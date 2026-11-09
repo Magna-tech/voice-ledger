@@ -1,0 +1,12 @@
+{
+  "name": "Voice Ledger",
+  "short_name": "Ledger",
+  "description": "Say what you spent. It gets logged. Everything stays on this device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ec",
+  "theme_color": "#0f6b4f",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "shortcuts": [{ "name": "Log an expense by voice", "short_name": "Speak", "url": "./?listen=1" }]
+}
