@@ -1,6 +1,6 @@
 // Offline support: try the network first so updates show up, fall back to the cached copy.
-const CACHE = 'voice-ledger-v1';
-const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'parser.js', 'icon.svg', 'manifest.webmanifest'];
+const CACHE = 'voice-ledger-v2';
+const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'parser.js', 'native.js', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

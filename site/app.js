@@ -1,4 +1,5 @@
 import { parseExpense, CATEGORIES } from './parser.js';
+import { nativeBridge, NativeRecognition, saveFile } from './native.js';
 
 const ENTRIES_KEY = 'voiceledger.entries.v1';
 const SETTINGS_KEY = 'voiceledger.settings.v1';
@@ -113,7 +114,8 @@ $('typeForm').addEventListener('submit', (ev) => {
 });
 
 // ---------- speech
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// In the Android app, use the phone's speech service (WebView has no working SpeechRecognition).
+const SR = NativeRecognition || window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null;
 let listening = false;
 let finalText = '';
@@ -139,7 +141,15 @@ function startListening() {
     setStatus((finalText + interim).trim() || 'Listening…', 'live');
   };
   rec.onerror = (ev) => {
-    const messages = {
+    const messages = nativeBridge ? {
+      'not-allowed': 'Microphone permission is off. Turn it on in Settings › Apps › Voice Ledger › Permissions, or type instead.',
+      'no-recognizer': 'This phone has no speech recognition service. Install or enable Google’s speech services, or type instead.',
+      'no-speech': 'I did not hear anything. Tap and try again.',
+      'audio-capture': 'Could not use the microphone.',
+      network: 'Speech recognition needs a connection for this language. Type instead, or download the language for offline speech in your phone’s settings.',
+      'language-not-supported': 'Your phone’s speech service does not support this language. Pick another in Settings.',
+      busy: 'The speech service is busy. Try again in a moment.',
+    } : {
       'not-allowed': 'Microphone access is blocked. Allow it in the browser’s site settings, or type instead.',
       'service-not-allowed': 'Speech recognition is not allowed here. Type instead.',
       'no-speech': 'I did not hear anything. Tap and try again.',
@@ -242,10 +252,19 @@ $('exportBtn').addEventListener('click', () => {
   if (!entries.length) { setStatus('Nothing to export yet.'); return; }
   const cols = ['date', 'amount', 'currency', 'category', 'description', 'place', 'method', 'raw'];
   const rows = entries.slice().sort((a, b) => a.date.localeCompare(b.date)).map((e) => cols.map((c) => csvCell(e[c])).join(','));
-  const blob = new Blob([`﻿${cols.join(',')}\n${rows.join('\n')}\n`], { type: 'text/csv' });
+  const csv = `﻿${cols.join(',')}\n${rows.join('\n')}\n`;
+  const name = `voice-ledger-${todayIso()}.csv`;
+  if (nativeBridge) {
+    saveFile(name, csv).then(({ ok, reason }) => {
+      if (ok) setStatus(`Saved ${entries.length} entries to ${name}.`);
+      else if (reason !== 'cancelled') setStatus('Could not save the file.', 'error');
+    });
+    return;
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `voice-ledger-${todayIso()}.csv`;
+  a.download = name;
   document.body.append(a);
   a.click();
   a.remove();
@@ -253,7 +272,12 @@ $('exportBtn').addEventListener('click', () => {
 });
 
 // ---------- start
+if (nativeBridge) {
+  $('empty').textContent = 'Nothing logged yet. Your entries are stored only on this phone.';
+  document.querySelector('#settingsForm .note').textContent = 'Entries are stored only on this phone; the app has no internet access. Speech is turned into text by your phone’s speech service (usually Google), which may send the audio to Google unless the language is downloaded for offline use. Typing avoids it. Uninstalling the app deletes your entries, so export a CSV to keep a copy.';
+}
 render();
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+// The Android app ships its files inside the APK, so it needs no service worker.
+if (!nativeBridge && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 // Home-screen shortcut: open straight into listening.
 if (new URLSearchParams(location.search).get('listen') === '1') startListening();

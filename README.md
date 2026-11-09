@@ -30,9 +30,36 @@ Pushing to `main` runs the tests, then publishes `site/` to GitHub Pages. One-ti
 
 On a phone, open the site and choose "Add to Home screen" for an app-like icon; long-pressing the icon offers a "Log an expense by voice" shortcut on Android.
 
+## Android app
+
+`android/` is an Android app (Android 8.0 and newer) that packages the same `site/` files, so the website and the app never drift apart.
+
+- **Stored on the phone only.** Entries live in the app's private storage. The app has no internet permission, so it cannot send them anywhere, and cloud backup is turned off. Uninstalling the app deletes the entries, so use **Export CSV** to keep a copy (it opens Android's "Save as" picker).
+- **Voice** uses the phone's speech recognition service (usually Google's) through Android's `SpeechRecognizer`. Like Chrome, that service may send audio to Google unless the language has been downloaded for offline speech. The first tap asks for microphone permission. Typing works without it.
+- Long-press the app icon for a **Log an expense by voice** shortcut.
+
+### Install
+
+Download the APK from the repo's Releases page and open it on the phone. Android will ask you to allow installs from that source the first time.
+
+### Build
+
+Needs JDK 17+, the Android SDK and Gradle 8.11+ (Android Studio provides all three). Open `android/` in Android Studio, or:
+
+```
+cd android
+gradle assembleDebug      # app/build/outputs/apk/debug/app-debug.apk
+gradle assembleRelease    # signed only if signing is set up, see below
+```
+
+Release signing reads `~/.voice-ledger-signing/keystore.properties` (or the file named by `VOICE_LEDGER_SIGNING`) with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`. Keep that keystore backed up: Android only installs updates signed with the same key.
+
+Every push that touches `android/` or `site/` builds a debug APK in GitHub Actions (download it from the run's artifacts).
+
 ## Known limits
 
 - Voice input needs Chrome, Edge or Safari. Firefox falls back to typing.
 - Speech accuracy depends on the browser's recogniser; mixed-language sentences are hit and miss.
-- Data lives in one browser. Clearing site data deletes it, so export CSV to back up.
+- Data lives in one browser (or in the Android app). Clearing site data, or uninstalling the app, deletes it, so export CSV to back up.
+- The website and the Android app keep separate entries; there is no sync.
 - Categories are keyword-based and English-first.

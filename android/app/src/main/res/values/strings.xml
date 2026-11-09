@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Voice Ledger</string>
+    <string name="shortcut_speak_short">Speak</string>
+    <string name="shortcut_speak_long">Log an expense by voice</string>
+</resources>

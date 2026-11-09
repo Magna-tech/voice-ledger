@@ -3,6 +3,7 @@ name: Test and deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore: ['android/**', '.github/workflows/android.yml']
   workflow_dispatch:
 
 permissions:
