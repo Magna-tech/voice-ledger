@@ -1,5 +1,5 @@
 <resources>
-    <!-- Match --bg and --accent in site/styles.css -->
+    <!-- Same as the bg and accent colours in site/styles.css -->
     <color name="page_bg">#F6F3EC</color>
     <color name="accent">#0F6B4F</color>
     <color name="icon_bg">#0F6B4F</color>
