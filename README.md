@@ -54,7 +54,7 @@ gradle assembleRelease    # signed only if signing is set up, see below
 
 Release signing reads `~/.voice-ledger-signing/keystore.properties` (or the file named by `VOICE_LEDGER_SIGNING`) with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`. Keep that keystore backed up: Android only installs updates signed with the same key.
 
-Every push that touches `android/` or `site/` builds a debug APK in GitHub Actions (download it from the run's artifacts).
+Every push that touches `android/` or `site/` builds a debug APK and an unsigned release APK in GitHub Actions (download them from the run's artifacts). Published releases are signed locally with `apksigner`, so the signing key is never uploaded.
 
 ## Known limits
 
